@@ -73,6 +73,54 @@ const PaymentCardPage = () => {
     }
   };
 
+  //Surjo Pay Start
+
+  const [loadingSurjoPay, setLoadingSurjoPay] = useState(false);
+
+  const handlePaymentSurjoPay = async () => {
+    setLoadingSurjoPay(true);
+    try {
+      // Call the API route to initiate payment
+      const response = await axios.post("http://localhost:7000/surjo-pay");
+      const { checkout_url } = response.data;
+
+      if (checkout_url) {
+        // Redirect to the SurjoPay checkout page
+        window.location.href = checkout_url;
+      } else {
+        alert("Failed to get the checkout URL.");
+      }
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      alert("An error occurred during payment initiation.");
+    } finally {
+      setLoadingSurjoPay(false);
+    }
+  };
+
+  const [amarPayloading, setAmarPayLoading] = useState(false);
+
+  const handlePaymentAmarPay = async () => {
+    setAmarPayLoading(true);
+    try {
+      // Call the API route to initiate payment
+      const response = await axios.post("http://localhost:7000/amar-pay");
+      const { payment_url } = response.data;
+
+      if (payment_url) {
+        // Redirect to the SurjoPay checkout page
+        window.location.href = payment_url;
+      } else {
+        alert("Failed to get the checkout URL.");
+      }
+    } catch (error) {
+      console.error("Error initiating payment:", error);
+      alert("An error occurred during payment initiation.");
+    } finally {
+      setAmarPayLoading(false);
+    }
+  };
+
   return (
     <div className=" grid justify-center items-center h-screen  ">
       <Card className="w-60" shadow="sm" padding="lg" radius="md" withBorder>
@@ -113,13 +161,23 @@ const PaymentCardPage = () => {
         </Button>
 
         <Button
-          onClick={handleSSLSubmit}
+          onClick={handlePaymentSurjoPay}
           color="blue"
           fullWidth
           mt="md"
           radius="md"
         >
-          Book with Bkash
+          {!loadingSurjoPay ? "Book with SurjoPay" : <div>Processing...</div>}
+        </Button>
+
+        <Button
+          onClick={handlePaymentAmarPay}
+          color="blue"
+          fullWidth
+          mt="md"
+          radius="md"
+        >
+          {!amarPayloading ? "Book with Amar Pay" : <div>Processing...</div>}
         </Button>
       </Card>
 
