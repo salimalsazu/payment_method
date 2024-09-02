@@ -1,11 +1,15 @@
 require("dotenv").config();
 import express from "express";
 import cors from "cors";
+import axios from "axios";
+//Import Surjo Pay
+const shurjopay = require("shurjopay");
+
 // import paypal from "paypal-rest-sdk";
+const paypal = require("paypal-rest-sdk");
 
 //Paypal auth File Get
 // const paypal = require("./service/paypal");
-const paypal = require("paypal-rest-sdk");
 
 //SSl Commerz
 const SSLCommerzPayment = require("sslcommerz-lts");
@@ -232,6 +236,115 @@ app.get("/success/:paymentId", async (req, res) => {
 
 app.get("/failed", async (req, res) => {
   return res.redirect("http://localhost:3000/failed");
+});
+
+//Surjo Pay Route --------------------------------------------------------------------------------
+
+async function getToken() {
+  try {
+    const response = await axios.post(
+      "https://sandbox.shurjopayment.com/api/get_token",
+      {
+        username: "sp_sandbox",
+        password: "pyyk97hu&6u6",
+      }
+    );
+
+    return response.data.token;
+  } catch (error) {
+    console.error("Error fetching token:");
+    throw new Error("Failed to obtain token");
+  }
+}
+
+app.post("/surjo-pay", async (req, res) => {
+  try {
+    // Step 1: Generate a token
+    const token = await getToken();
+
+    // Step 2: Initiate payment
+    const paymentResponse = await axios.post(
+      "https://www.sandbox.shurjopayment.com/api/secret-pay",
+      {
+        prefix: "sp",
+        token: token,
+        return_url: "http://localhost:3000/sp-success",
+        cancel_url: "http://localhost:3000",
+        store_id: "1",
+        amount: "1000",
+        order_id: "sp315689",
+        currency: "BDT",
+        customer_name: "ATM Fahim",
+        customer_address: "Dhaka",
+        customer_phone: "01717302935",
+        customer_city: "Dhaka",
+        customer_post_code: "1212",
+        client_ip: req.ip,
+      }
+    );
+
+    res.json(paymentResponse.data);
+  } catch (error) {
+    console.error("Error payment");
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.post("/sujo-pay-verify", async (req, res) => {
+  const { order_id } = req.body;
+  const token = await getToken();
+
+  try {
+    const verifyResponse = await axios.post(
+      "https://www.sandbox.shurjopayment.com/api/verification",
+      { order_id },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    res.json(verifyResponse.data);
+  } catch (error) {
+    console.error("Error verifying payment");
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+//Amar Pay Route
+
+app.post("/amar-pay", async (req, res) => {
+  try {
+    const amarPayment = await axios.post(
+      "https://​sandbox​.aamarpay.com/jsonpost.php",
+      {
+        store_id: "aamarpaytest",
+        tran_id: "asdasdasdasdasd123",
+        success_url: "http://www.merchantdomain.com/suc esspage.html",
+        fail_url: "http://www.merchantdomain.com/faile dpage.html",
+        cancel_url: "http://www.merchantdomain.com/can cellpage.html",
+        amount: "10.0",
+        currency: "BDT",
+        signature_key: "dbb74894e82415a2f7ff0ec3a97e4183",
+        desc: "Merchant Registration Payment",
+        cus_name: "Name",
+        cus_email: "payer@merchantcusomter.com",
+        cus_add1: "House B-158 Road 22",
+        cus_add2: "Mohakhali DOHS",
+        cus_city: "Dhaka",
+        cus_state: "Dhaka",
+        cus_postcode: "1206",
+        cus_country: "Bangladesh",
+        cus_phone: "+8801704",
+        type: "json",
+      }
+    );
+
+    res.json(amarPayment.data);
+  } catch (error) {
+    console.error("Failed");
+  }
 });
 
 app.listen(PORT, () => {
