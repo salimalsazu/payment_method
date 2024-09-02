@@ -12,6 +12,7 @@
     "@mantine/core": "^7.12.1",
     "@mantine/form": "^7.12.1",
     "@mantine/hooks": "^7.12.1",
+    "@paypal/react-paypal-js": "^8.6.0",
     "@reduxjs/toolkit": "^2.2.7",
     "@stripe/react-stripe-js": "^2.8.0",
     "@stripe/stripe-js": "^4.4.0",

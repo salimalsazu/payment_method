@@ -6,6 +6,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { use, useEffect, useState } from "react";
 import { Form } from "@mantine/form";
 import axios from "axios";
+import PayPalCheckout from "../component/Checkout";
 
 const PaymentCardPage = () => {
   //stripe Button
@@ -73,6 +74,17 @@ const PaymentCardPage = () => {
     }
   };
 
+  const handleSuccess = (order:any) => {
+    console.log('Payment successful:', order);
+    // Handle successful payment here
+  };
+
+  const handleError = (error:any) => {
+    console.error('Payment error:', error);
+    // Handle payment error here
+  };
+
+
   return (
     <div className=" grid justify-center items-center h-screen  ">
       <Card className="w-60" shadow="sm" padding="lg" radius="md" withBorder>
@@ -129,6 +141,15 @@ const PaymentCardPage = () => {
           closeDrawer={closeDrawer}
           amount={amount}
         />
+      </div>
+
+      <div>
+      <PayPalCheckout
+        amount="10.00" // Example amount
+        currency="USD" // Example currency
+        onSuccess={handleSuccess}
+        onError={handleError}
+      />
       </div>
     </div>
   );
